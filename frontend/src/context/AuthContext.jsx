@@ -97,7 +97,7 @@ export function AuthProvider({ children }) {
     const provider = new BrowserProvider(window.ethereum);
     const s = await provider.getSigner();
     const addr = (await s.getAddress()).toLowerCase();
-   const res = await fetch(`${API_URL}/api/auth/login`, {
+   const res = await fetch("https://campus-escrow-api.onrender.com/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ walletAddress: addr, role: selectedRole }),
