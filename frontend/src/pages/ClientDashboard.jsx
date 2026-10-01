@@ -16,10 +16,16 @@ export default function ClientDashboard() {
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
+    if (!account) return;
     Promise.all([
       api(`/dashboard/client/${account}`),
       api(`/projects?client=${account}`),
-    ]).then(([k, p]) => { setKpi(k); setProjects(p); })
+    ])
+      .then(([k, p]) => {
+        setKpi(k);
+        const list = Array.isArray(p) ? p : (p?.projects || p?.data || []);
+        setProjects(list);
+      })
       .catch((e) => toast(errMsg(e), "error"));
   }, [account]);
 
@@ -40,18 +46,32 @@ export default function ClientDashboard() {
         <div className="card overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-100"><h2 className="text-sm font-semibold">My Projects</h2></div>
           <table className="w-full">
-            <thead><tr><th className="th">Title</th><th className="th">Budget</th><th className="th">Deadline</th><th className="th">Status</th><th className="th" /></tr></thead>
+            <thead>
+              <tr>
+                <th className="th">Title</th>
+                <th className="th">Budget</th>
+                <th className="th">Deadline</th>
+                <th className="th">Status</th>
+                <th className="th" />
+              </tr>
+            </thead>
             <tbody>
-              {projects.map((p) => (
+              {(projects || []).map((p) => (
                 <tr key={p.id} className="border-t border-slate-100">
                   <td className="td font-medium">{p.title}</td>
                   <td className="td">{inr(p.budget_eth)}</td>
                   <td className="td text-xs">{new Date(p.deadline).toLocaleDateString("en-IN")}</td>
                   <td className="td"><StatusBadge status={p.status} /></td>
-                  <td className="td text-right"><Link to={`/client/projects/${p.id}`} className="btn-outline !py-1 !px-3 text-xs">View</Link></td>
+                  <td className="td text-right">
+                    <Link to={`/client/projects/${p.id}`} className="btn-outline !py-1 !px-3 text-xs">View</Link>
+                  </td>
                 </tr>
               ))}
-              {projects.length === 0 && <tr><td className="td text-slate-400" colSpan={5}>No projects yet — create your first one.</td></tr>}
+              {(!projects || projects.length === 0) && (
+                <tr>
+                  <td className="td text-slate-400" colSpan={5}>No projects yet — create your first one.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
