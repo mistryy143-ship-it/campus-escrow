@@ -66,7 +66,7 @@ export function AuthProvider({ children }) {
         // Wallet switched accounts -> adopt the stored role for this wallet
         const res = await fetch(`${API_URL}/api/auth/login`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "appli   cation/json" },
           body: JSON.stringify({ walletAddress: account }),
         }).catch(() => null);
         if (res) {
@@ -97,7 +97,7 @@ export function AuthProvider({ children }) {
     const provider = new BrowserProvider(window.ethereum);
     const s = await provider.getSigner();
     const addr = (await s.getAddress()).toLowerCase();
-    const res = await fetch("/api/auth/login", {
+   const res = await fetch(`${API_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ walletAddress: addr, role: selectedRole }),
