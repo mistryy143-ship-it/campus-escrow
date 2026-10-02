@@ -144,4 +144,26 @@ router.post("/:id/dispute", requireRole("CLIENT", "FREELANCER"), asyncH(async (r
   ok(res, d);
 }));
 
+// UPDATE project & milestone status directly from frontend transactions
+router.post("/:id/status", asyncH(async (req, res) => {
+  const { status, txHash } = req.body;
+  const p = (await q("SELECT * FROM projects WHERE id = $1", [req.params.id])).rows[0];
+  if (!p) return fail(res, 404, "Project not found.");
+
+  await q("UPDATE projects SET status = $1 WHERE id = $2", [status, p.id]);
+  await q("UPDATE milestones SET status = $1 WHERE project_id = $2", [status, p.id]);
+
+  await audit(
+    p.id,
+    status === "RELEASED" ? "FUNDS_RELEASED" : "MILESTONE_SUBMITTED",
+    req.headers["x-wallet-address"] || p.client_wallet,
+    p.status,
+    status,
+    `Status updated to ${status} via transaction`,
+    txHash
+  );
+
+  ok(res, { success: true, status });
+}));
+
 module.exports = router;

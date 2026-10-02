@@ -62,7 +62,7 @@ export default function AgreementView({ projectId, mode }) {
     try {
       await fn();
       toast(successMsg, "success");
-      await new Promise((r) => setTimeout(r, 2500)); // let the listener sync first
+      await new Promise((r) => setTimeout(r, 1500));
       await load();
     } catch (e) {
       console.error(e);
@@ -82,12 +82,20 @@ export default function AgreementView({ projectId, mode }) {
       await api(`/projects/${projectId}/evidence`, { method: "POST", wallet: account, formData: fd });
       const tx = await getContract().submitMilestone(chainId, hash);
       await tx.wait();
+      await api(`/projects/${projectId}/status`, {
+        method: "POST",
+        body: { status: "MILESTONE_SUBMITTED", txHash: tx.hash }
+      });
     }, "Milestone submitted on-chain.");
 
   const handleAccept = () =>
     runTx(async () => {
       const tx = await getContract().accept(chainId);
       await tx.wait();
+      await api(`/projects/${projectId}/status`, {
+        method: "POST",
+        body: { status: "RELEASED", txHash: tx.hash }
+      });
     }, "Funds released to the freelancer.");
 
   const handleDispute = () =>
